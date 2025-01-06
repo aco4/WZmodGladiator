@@ -19,11 +19,24 @@
 
 ---
 
-## Units gain rank faster
+## Natural experience gain OFF
 `Gladiator/multiplay/script/mods/init.js`
 
 ```js
-setExperienceModifier(player, 500);
+setExperienceModifier(player, 0);
+```
+
+---
+
+## Units in the center gain experience
+`Gladiator/multiplay/script/mods/init.js`
+
+```js
+for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
+    if (obj.type == DROID) {
+        setDroidExperience(obj, obj.experience + 1.0);
+    }
+}
 ```
 
 ---

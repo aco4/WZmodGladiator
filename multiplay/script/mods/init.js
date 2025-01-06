@@ -18,12 +18,10 @@ function gladiator_eventStartLevel() {
     receiveAllEvents(true);
 
     setMissionTime(4*60); // 4 minutes
-    queue("countdown", 4*60*1000 - 10);
 
     setScrollLimits(x1, y1, x2, y2);
 
-    // setNoGoArea(128*(125-5), 128*(125-5), 128*(125+5), 128*(125+5), 0);
-    setNoGoArea(125-5, 125-5, 125+5, 125+5, 0);
+    setNoGoArea(125-2, 125-2, 125+2, 125+2, 0);
 
     // Let players see the whole map
     for (let player = 0; player < maxPlayers; player++) {
@@ -57,7 +55,6 @@ function gladiator_eventMissionTimeout() {
         }
     }
 
-
     // break scavenger walls
     for (s of enumStruct(scavengerPlayer)) {
         removeObject(s, true);
@@ -68,12 +65,12 @@ function gladiator_eventMissionTimeout() {
     shrink_map();
 
     give_xp();
+
+    queue("info2", 10*1000); // run this function 10 seconds later
 }
 
 function gladiator_eventChat(from, to, message) {
     receiveAllEvents(true);
-
-    console(".");
 
     if (getMissionTime() == -1) { // voting not allowed after walls break
         return;
@@ -83,31 +80,18 @@ function gladiator_eventChat(from, to, message) {
         return;
     }
 
-    if (
-        message == "more time" ||      // English
-        message == "больше времени" || // Russian
-        message == "mais tempo"        // Portuguese (Brazil)
-    ) {
-        // If the player has not voted yet
-        if (votes[from] == false) {
-            votes[from] = true;
-            if (count_votes() > Math.floor(num_voters / 2)) {
-                console(`More time added.`);
-                setMissionTime(getMissionTime() + 2*60); // add 2 minutes
-                reset_votes();
-            } else {
-                console(`Player ${from} voted for more time.`);
-            }
-        }
+    // English, Russian, Portuguese (Brazil)
+    if (message == "more time" ||message == "больше времени" || message == "mais tempo") {
+        process_vote(from);
     }
 }
 
 function give_xp() {
     queue("give_xp", 5*1000); // run this function every 5 seconds
 
-    for (obj of enumArea(125-5, 125-5, 125+5, 125+5)) {
+    for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
         if (obj.type == DROID) {
-            setDroidExperience(obj, obj.experience + 0.5);
+            setDroidExperience(obj, obj.experience + 1.0);
         }
     }
 }
@@ -170,8 +154,17 @@ function info() {
     playSound("beep9.ogg");
 }
 
-function countdown() {
-    playSound("10to1.ogg");
+function info2() {
+    console(" ");
+    console(" ");
+    console("Units get stronger while in the center");
+    console(" ");
+    console(" ");
+    playSound("beep9.ogg");
+    for (let player = 0; player < maxPlayers; player++) {
+        addBeacon(125, 125, player);
+    }
+    playSound("beacon.ogg");
 }
 
 function out_of_bounds(obj) {
@@ -198,6 +191,12 @@ function find_base() {
     return null;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                                   Voting                                   //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 // An eligible voter is human and non-spectator
 function count_voters() {
     let count = 0;
@@ -215,10 +214,27 @@ function reset_votes() {
     }
 }
 
+function process_vote(player) {
+    // If the player already voted
+    if (votes[from] == true) {
+        return;
+    }
+
+    votes[from] = true;
+
+    if (count_votes() > Math.floor(num_voters / 2)) {
+        console(`More time added.`);
+        setMissionTime(getMissionTime() + 2*60); // add 2 minutes
+        reset_votes();
+    } else {
+        console(`Player ${from} voted for more time.`);
+    }
+}
+
 function count_votes() {
     let count = 0;
     for (vote of votes) {
-        if (vote) {
+        if (vote == true) {
             count++;
         }
     }
