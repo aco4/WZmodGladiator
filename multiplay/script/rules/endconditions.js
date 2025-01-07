@@ -1,3 +1,4 @@
+/*
 namespace("conditions_");
 
 let win_state = Array(maxPlayers).fill("contending");
@@ -27,6 +28,9 @@ function end_the_game() {
             gameOverMessage(win_state[player] == "contending");
         }
     }
+    if (isSpectator(-1)) {
+        gameOverMessage(-1);
+    }
 }
 
 function countFactory(player) {
@@ -43,8 +47,10 @@ function count_contenders() {
     }
     return count;
 }
+*/
 
-/*
+
+
 
 // registrate events conditions_eventGameInit, conditions_eventDroidBuilt, conditions_eventStructureBuil, conditions_eventResearched, conditions_eventAttacked
 namespace("conditions_");
@@ -303,4 +309,5 @@ function conditions_eventGameLoaded()
 	createTeams();
 }
 
-*/
+
+

@@ -15,18 +15,16 @@ function gladiator_eventGameInit() {
 
 // Called when the level is started
 function gladiator_eventStartLevel() {
-    receiveAllEvents(true);
-
     setMissionTime(4*60); // 4 minutes
 
     setScrollLimits(x1, y1, x2, y2);
 
-    setNoGoArea(125-2, 125-2, 125+2, 125+2, 0);
+    // setNoGoArea(125-1, 125-1, 125+1, 125+1, 0);
 
     // Let players see the whole map
     for (let player = 0; player < maxPlayers; player++) {
         if (!isSpectator(player)) {
-            addSpotter(125, 125, player, 10000, false, 0);
+            addSpotter(125, 125, player, 84*128, false, 0);
             setExperienceModifier(player, 0);
         }
     }
@@ -34,15 +32,14 @@ function gladiator_eventStartLevel() {
     // Move the camera to the base
     if (!isSpectator(selectedPlayer)) {
         let [x, y] = find_base();
-        cameraSlide((x-2)*128, y*128);
+        centreView(x-2, y);
     }
 
-    queue("info", 10*1000); // run this function 10 seconds later
+    queue("info1", 8*1000); // run this function 8 seconds later
+    queue("info2", 13*1000); // run this function 13 seconds later
 }
 
 function gladiator_eventMissionTimeout() {
-    receiveAllEvents(true);
-
     setMissionTime(-1); // Remove the mission timer
 
     for (let player = 0; player < maxPlayers; player++) {
@@ -60,18 +57,18 @@ function gladiator_eventMissionTimeout() {
         removeObject(s, true);
     }
 
-    fire_las_sat();
-
     shrink_map();
 
-    give_xp();
+    fire_las_sat();
 
-    queue("info2", 10*1000); // run this function 10 seconds later
+    // give_xp();
+
+    queue("info3", 5*1000); // run this function 5 seconds later
+
+    // queue("info4", 10*1000); // run this function 10 seconds later
 }
 
 function gladiator_eventChat(from, to, message) {
-    receiveAllEvents(true);
-
     if (getMissionTime() == -1) { // voting not allowed after walls break
         return;
     }
@@ -87,17 +84,18 @@ function gladiator_eventChat(from, to, message) {
 }
 
 function give_xp() {
-    queue("give_xp", 5*1000); // run this function every 5 seconds
+    queue("give_xp", 1*1000); // run this function every second
 
-    for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
+    for (obj of enumArea(125-1, 125-1, 125+1, 125+1)) {
         if (obj.type == DROID) {
-            setDroidExperience(obj, obj.experience + 1.0);
+            setDroidExperience(obj, obj.experience + 1);
         }
     }
 }
 
 function shrink_map() {
-    setScrollLimits(x1++, y1++, x2--, y2--);
+    setScrollLimits(++x1, ++y1, --x2, --y2);
+    // setScrollLimits(x1++, y1++, x2--, y2--);
 
     kill();
 
@@ -113,18 +111,18 @@ function fire_las_sat() {
     switch (syncRandom(4)) {
         case 0: // north
             var x = x1+syncRandom(x2 - x1);
-            var y = y1 + 2;
+            var y = y1;
             break;
         case 1: // south
             var x = x1+syncRandom(x2 - x1);
-            var y = y2 - 2;
+            var y = y2;
             break;
         case 2: // east
-            var x = x2 - 2;
+            var x = x2;
             var y = y1+syncRandom(y2 - y1);
             break;
         case 3: // west
-            var x = x1 + 2;
+            var x = x1;
             var y = y1+syncRandom(y2 - y1);
             break;
     }
@@ -145,10 +143,10 @@ function kill() {
     }
 }
 
-function info() {
+function info1() {
     console(" ");
     console(" ");
-    console("Walls break in 4 minutes");
+    console("Your base will explode in 4 minutes.");
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -157,12 +155,32 @@ function info() {
 function info2() {
     console(" ");
     console(" ");
+    console("Prepare an army for battle!");
+    console(" ");
+    console(" ");
+    playSound("beep9.ogg");
+}
+
+function info3() {
+    console(" ");
+    console(" ");
+    console("FIGHT!");
+    console(" ");
+    console(" ");
+    playSound("beep9.ogg");
+}
+
+function info4() {
+    console(" ");
+    console(" ");
     console("Units get stronger while in the center");
     console(" ");
     console(" ");
     playSound("beep9.ogg");
     for (let player = 0; player < maxPlayers; player++) {
-        addBeacon(125, 125, player);
+        if (!isSpectator(player)) {
+            addBeacon(125, 125, player);
+        }
     }
     playSound("beacon.ogg");
 }
