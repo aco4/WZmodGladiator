@@ -400,18 +400,6 @@ _global.checkAttack = function() {
 		return;
 }
 
-_global.pushVtols = function(object) {
-	var vtols = enumRange(object.x, object.y, 20, me, false);
-	var enemies = enumRange(object.x, object.y, 8, ENEMIES, true);
-	for (let i = 0; i < vtols.length; ++i)
-		if (vtolArmed(vtols[i], 1))
-			for (let j = 0; j < enemies.length; ++j)
-				if (vtolCanHit(vtols[i], enemies[j])) {
-					orderDroidObj(vtols[i], DORDER_ATTACK, enemies[j]);
-					break;
-				}
-}
-
 _global.inPanic = function() {
 	function uncached() {
 		var badGuys = enumRange(baseLocation.x, baseLocation.y, baseScale, ENEMIES).length;

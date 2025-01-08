@@ -509,7 +509,7 @@
 		"buildPoints": 125,
 		"buildPower": 25,
 		"height": 2,
-		"hitpoints": 65536,
+		"hitpoints": 250,
 		"id": "A0HardcreteMk1CWall",
 		"name": "Hardcrete Corner Wall",
 		"strength": "HARD",

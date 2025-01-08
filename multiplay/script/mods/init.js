@@ -19,9 +19,6 @@ function gladiator_eventStartLevel() {
 
     setScrollLimits(x1, y1, x2, y2);
 
-    // setNoGoArea(125-1, 125-1, 125+1, 125+1, 0);
-
-    // Let players see the whole map
     for (let player = 0; player < maxPlayers; player++) {
         if (!isSpectator(player)) {
             addSpotter(125, 125, player, 84*128, false, 0);
@@ -29,10 +26,9 @@ function gladiator_eventStartLevel() {
         }
     }
 
-    // Move the camera to the base
     if (!isSpectator(selectedPlayer)) {
-        let [x, y] = find_base();
-        centreView(x-2, y);
+        let [x, y] = find_factory();
+        centreView(x-2, y+1);  // Move the camera to the base
     }
 
     queue("info1", 8*1000); // run this function 8 seconds later
@@ -45,27 +41,26 @@ function gladiator_eventMissionTimeout() {
     for (let player = 0; player < maxPlayers; player++) {
         if (!isSpectator(player)) {
             enumStruct(player).forEach((s) => {
-                if (s.stattype != HQ && s.stattype != COMMAND_CONTROL) {
+                if (s.stattype == FACTORY || s.stattype == CYBORG_FACTORY || s.stattype == RESEARCH_LAB) {
                     removeObject(s);
                 }
             });
         }
     }
 
-    // break scavenger walls
-    for (s of enumStruct(scavengerPlayer)) {
-        removeObject(s, true);
-    }
+    enumFeature(ALL_PLAYERS).forEach((f) => {
+        removeObject(f, true);
+    });
 
-    shrink_map();
+    setStructureLimits("A0LightFactory", 0, selectedPlayer);
+    setStructureLimits("A0CyborgFactory", 0, selectedPlayer);
+    setStructureLimits("A0ResearchFacility", 0, selectedPlayer);
 
-    fire_las_sat();
+    setTimer("shrink_map", 5*1000);
 
-    // give_xp();
+    setTimer("fire_las_sat", 100);
 
     queue("info3", 5*1000); // run this function 5 seconds later
-
-    // queue("info4", 10*1000); // run this function 10 seconds later
 }
 
 function gladiator_eventChat(from, to, message) {
@@ -78,55 +73,35 @@ function gladiator_eventChat(from, to, message) {
     }
 
     // English, Russian, Portuguese (Brazil)
-    if (message == "more time" ||message == "больше времени" || message == "mais tempo") {
+    if (message == "more time" || message == "больше времени" || message == "mais tempo") {
         process_vote(from);
     }
 }
 
-function give_xp() {
-    queue("give_xp", 1*1000); // run this function every second
-
-    for (obj of enumArea(125-1, 125-1, 125+1, 125+1)) {
-        if (obj.type == DROID) {
-            setDroidExperience(obj, obj.experience + 1);
-        }
-    }
-}
-
 function shrink_map() {
+    if (x2-x1 <= 16 && y2-y1 <= 16) {
+        return;
+    }
     setScrollLimits(++x1, ++y1, --x2, --y2);
     // setScrollLimits(x1++, y1++, x2--, y2--);
 
     kill();
-
-    if (x2-x1 > 16 && y2-y1 > 16) { // minimum diameter
-        queue("shrink_map", 5*1000); // run this function every 5 seconds
-    }
 }
 
 function fire_las_sat() {
-    queue("fire_las_sat", 250); // run this function every 0.25 seconds
-
     // Pick a random border (north, south, east, or west)
-    switch (syncRandom(4)) {
-        case 0: // north
-            var x = x1+syncRandom(x2 - x1);
-            var y = y1;
-            break;
-        case 1: // south
-            var x = x1+syncRandom(x2 - x1);
-            var y = y2;
-            break;
-        case 2: // east
-            var x = x2;
-            var y = y1+syncRandom(y2 - y1);
-            break;
-        case 3: // west
-            var x = x1;
-            var y = y1+syncRandom(y2 - y1);
-            break;
-    }
-
+    const [x, y] = (() => {
+        switch (syncRandom(4)) {
+            case 0: // north
+                return [x1+syncRandom(x2 - x1), y1];
+            case 1: // south
+                return [x1+syncRandom(x2 - x1), y2];
+            case 2: // east
+                return [x2, y1+syncRandom(y2 - y1)];
+            case 3: // west
+                return [x1, y1+syncRandom(y2 - y1)];
+        }
+    })();
     fireWeaponAtLoc("LasSat", x, y, scavengerPlayer);
 }
 
@@ -170,36 +145,12 @@ function info3() {
     playSound("beep9.ogg");
 }
 
-function info4() {
-    console(" ");
-    console(" ");
-    console(_("Units get stronger while in the center"));
-    console(" ");
-    console(" ");
-    playSound("beep9.ogg");
-    for (let player = 0; player < maxPlayers; player++) {
-        if (!isSpectator(player)) {
-            addBeacon(125, 125, player);
-        }
-    }
-    playSound("beacon.ogg");
-}
-
 function out_of_bounds(obj) {
     return obj.x <= x1 || obj.y <= y1 || obj.x >= x2 || obj.y >= y2;
 }
 
-function get_player(playnum) {
-    for (player of playerData) {
-        if (player.position == playnum) {
-            return player;
-        }
-    }
-    return null;
-}
-
 // Locate the (x, y) position of the player's factory
-function find_base() {
+function find_factory() {
     if (isSpectator(selectedPlayer)) {
         return;
     }

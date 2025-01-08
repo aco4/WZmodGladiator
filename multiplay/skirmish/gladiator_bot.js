@@ -49,10 +49,10 @@ var subpersonalities = {
 		maxSensors: 1, // number of mobile sensor cars to produce
 		minMiscTanks: 0, // number of tanks to start harassing enemy
 		maxMiscTanks: 0, // number of tanks used for defense and harass
-		vtolness: 65, // the chance % of not making droids when adaptation mechanism chooses vtols
-		defensiveness: 65, // same thing for defenses; set this to 100 to enable turtle AI specific code
+		vtolness: 0, // the chance % of not making droids when adaptation mechanism chooses vtols
+		defensiveness: 0, // same thing for defenses; set this to 100 to enable turtle AI specific code
 		maxPower: 700, // build expensive things if we have more than that
-		repairAt: 50, // how much % healthy should droid be to join the attack group instead of repairing
+		repairAt: 0, // how much % healthy should droid be to join the attack group instead of repairing
 	},
 	MC: {
 		chatalias: "mc",
@@ -72,9 +72,9 @@ var subpersonalities = {
 		minTanks: 1, becomeHarder: 3, maxTanks: 16,
 		minTrucks: 0, minHoverTrucks: 0, maxSensors: 1,
 		minMiscTanks: 0, maxMiscTanks: 0,
-		vtolness: 65, defensiveness: 65,
+		vtolness: 0, defensiveness: 0,
 		maxPower: 700,
-		repairAt: 50,
+		repairAt: 0,
 	},
 	FR: {
 		chatalias: "fr",
@@ -93,9 +93,9 @@ var subpersonalities = {
 		minTanks: 1, becomeHarder: 3, maxTanks: 16,
 		minTrucks: 0, minHoverTrucks: 0, maxSensors: 1,
 		minMiscTanks: 0, maxMiscTanks: 0,
-		vtolness: 65, defensiveness: 65,
+		vtolness: 0, defensiveness: 0,
 		maxPower: 700,
-		repairAt: 50,
+		repairAt: 0,
 	},
 	FC: {
 		chatalias: "fc",
@@ -115,9 +115,49 @@ var subpersonalities = {
 		minTanks: 1, becomeHarder: 3, maxTanks: 16,
 		minTrucks: 0, minHoverTrucks: 0, maxSensors: 1,
 		minMiscTanks: 0, maxMiscTanks: 0,
-		vtolness: 65, defensiveness: 65,
+		vtolness: 0, defensiveness: 0,
 		maxPower: 700,
-		repairAt: 50,
+		repairAt: 0,
+	},
+	FF: {
+		chatalias: "ff",
+		weaponPaths: [
+			weaponStats.flamers,
+			weaponStats.lasers,
+		],
+		earlyResearch: [
+			"R-Wpn-Flamer-ROF01",
+			"R-Vehicle-Prop-Halftracks",
+			"R-Struc-PowerModuleMk1",
+			"R-Vehicle-Body11",
+		],
+		minTanks: 1, becomeHarder: 3, maxTanks: 16,
+		minTrucks: 0, minHoverTrucks: 0, maxSensors: 1,
+		minMiscTanks: 0, maxMiscTanks: 0,
+		vtolness: 0, defensiveness: 0,
+		maxPower: 700,
+		repairAt: 0,
+	},
+	MM: {
+		chatalias: "mm",
+		weaponPaths: [
+			weaponStats.machineguns,
+			weaponStats.lasers,
+		],
+		earlyResearch: [
+			"R-Wpn-MG-Damage01",
+			"R-Vehicle-Prop-Halftracks",
+			"R-Struc-PowerModuleMk1",
+			"R-Wpn-MG-Damage03",
+			"R-Vehicle-Body05",
+			"R-Wpn-MG5",
+		],
+		minTanks: 1, becomeHarder: 3, maxTanks: 16,
+		minTrucks: 0, minHoverTrucks: 0, maxSensors: 1,
+		minMiscTanks: 0, maxMiscTanks: 0,
+		vtolness: 0, defensiveness: 0,
+		maxPower: 700,
+		repairAt: 0,
 	},
 };
 

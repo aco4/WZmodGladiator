@@ -56,18 +56,10 @@ function eventAttacked(victim, attacker) {
 	if (isAlly(attacker.player))
 		return; // don't respond to accidental friendly fire
 	if (victim.type === DROID) {
-		if (!isVTOL(victim) && defined(victim.group)) {
+		if (defined(victim.group)) {
 			fallBack(victim, attacker);
 			setTarget(attacker, victim.group);
 			touchGroup(victim.group);
-		}
-		else if (isVTOL(victim) &&
-			vtolCanHit(victim, attacker) &&
-			vtolArmed(victim, 1) &&
-			!throttled(5000, victim.id))
-		{
-				orderDroidObj(victim, DORDER_ATTACK, attacker);
-				pushVtols(attacker);
 		}
 	} else if (victim.type === STRUCTURE) {
 		if (throttled(5000))
@@ -102,7 +94,3 @@ function eventBeaconRemoved(from, to) {
 	unnoticeBeacon(from);
 }
 
-function eventDestroyed(object) {
-	if (isEnemy(object.player))
-		pushVtols(object);
-}

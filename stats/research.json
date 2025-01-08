@@ -3393,7 +3393,10 @@
 		"id": "R-Sys-Spade1Mk1",
 		"name": "Construction Unit",
 		"researchPoints": 10,
-		"resultComponents": [],
+		"resultComponents": [
+			"Spade1Mk1",
+			"CyborgSpade"
+		],
 		"statID": "Spade1Mk1",
 		"techCode": 1
 	},

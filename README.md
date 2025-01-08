@@ -5,63 +5,35 @@
 - Singleplayer ✓
 - Multiplayer ✓
 - 4.5.5 ✓
+- Working AI bot ✓
 
----
+# How to play
+1. Download the map `10c-Gladiator-test5.wz`. Put in maps folder.
+2. Compress `multiplay` and `stats` into a single `.zip` file. Put in autoload folder.
+3. Restart Warzone 2100
 
-## Trucks OFF
-`Gladiator/stats/research.json`
+# Technical Details
+
+### 99999 power
+`Gladiator/multiplay/script/rules/setup/base.js`
 
 ```diff
-"R-Sys-Spade1Mk1": {
-    ...
--   "resultComponents": [
--       "Spade1Mk1",
--       "CyborgSpade"
--   ],
-+   "resultComponents": [],
-    ...
-},
+-   setPower(2500, player);
++   setPower(99999, player);
 ```
 
----
 
-## Natural experience gain OFF
-`Gladiator/multiplay/script/mods/init.js`
-
-```js
-setExperienceModifier(player, 0);
-```
-
----
-
-## Units in the center gain experience
-`Gladiator/multiplay/script/mods/init.js`
-
-```js
-for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
-    if (obj.type == DROID) {
-        setDroidExperience(obj, obj.experience + 1.0);
-    }
-}
-```
-
----
-
-## Walls can't break
+### 3x research speed
 `Gladiator/stats/structure.json`
 
 ```diff
-"A0HardcreteMk1CWall": {
-    ...
--   "hitpoints": 700,
-+   "hitpoints": 65536,
-    ...
-},
+-   "researchPoints": 14,
+-   "moduleResearchPoints": 7,
++   "researchPoints": 42,
++   "moduleResearchPoints": 21,
 ```
 
----
-
-## 6x factory speed
+### 6x factory speed
 `Gladiator/stats/structure.json`
 
 ```diff
@@ -75,9 +47,7 @@ for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
 },
 ```
 
----
-
-## 6x cyborg factory speed
+### 6x cyborg factory speed
 `Gladiator/stats/structure.json`
 
 ```diff
@@ -91,9 +61,26 @@ for (obj of enumArea(125-2, 125-2, 125+2, 125+2)) {
 },
 ```
 
----
+### Natural experience gain OFF
+`Gladiator/multiplay/script/mods/init.js`
 
-## No oil drums
+```js
+setExperienceModifier(player, 0);
+```
+
+### Unbreakable walls
+`Gladiator/stats/features.json`
+
+```diff
+"WallCorner": {
+    ...
+-   "hitpoints": 150,
++   "hitpoints": 65536,
+    ...
+},
+```
+
+### No oil drums
 `Gladiator/multiplay/script/rules/oildrum.js`
 
 ```js
@@ -106,12 +93,10 @@ function oilDrumInit() {
 }
 ```
 
----
-
-## 500 units limit
+### 500 units limit
 `Gladiator/multiplay/script/rules/setup/droidlimits.js`
 
-```js
+```diff
 function droidLimit(player)	// inside hackNetOff()
 {
 -   setDroidLimit(player, 150, DROID_ANY);
@@ -120,27 +105,4 @@ function droidLimit(player)	// inside hackNetOff()
     setDroidLimit(player, 15, DROID_CONSTRUCT);
 }
 
-```
-
----
-
-## 99999 power
-`Gladiator/multiplay/script/rules/setup/base.js`
-
-```diff
--   setPower(2500, player);
-+   setPower(99999, player);
-    completeResearchOnTime(timeAdvancedBaseTech, player);
-```
-
----
-
-## 3x research speed
-`Gladiator/stats/structure.json`
-
-```diff
--   "researchPoints": 14,
--   "moduleResearchPoints": 7,
-+   "researchPoints": 42,
-+   "moduleResearchPoints": 21,
 ```
