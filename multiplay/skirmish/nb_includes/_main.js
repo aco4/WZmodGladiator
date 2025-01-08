@@ -18,7 +18,6 @@ include(NB_INCLUDES + "adapt.js");
 include(NB_INCLUDES + "research.js");
 include(NB_INCLUDES + "produce.js");
 include(NB_INCLUDES + "tactics.js");
-include(NB_INCLUDES + "lassat.js");
 include(NB_INCLUDES + "chat.js");
 
 include(NB_INCLUDES + "timers.js");

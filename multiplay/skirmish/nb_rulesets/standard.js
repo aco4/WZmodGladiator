@@ -18,10 +18,6 @@
 // or simply a typical radius of a player's base
 const baseScale = 20;
 
-// diameter of laser satellite splash/incendiary damage
-// for use in lassat.js
-const lassatSplash = 4;
-
 // set this to 1 to choose templates randomly, instead of later=>better.
 const randomTemplates = 0;
 

@@ -146,7 +146,7 @@ function kill() {
 function info1() {
     console(" ");
     console(" ");
-    console("Your base will explode in 4 minutes.");
+    console(_("Your base will explode in 4 minutes."));
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -155,7 +155,7 @@ function info1() {
 function info2() {
     console(" ");
     console(" ");
-    console("Prepare an army for battle!");
+    console(_("Prepare an army for battle!"));
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -164,7 +164,7 @@ function info2() {
 function info3() {
     console(" ");
     console(" ");
-    console("FIGHT!");
+    console(_("FIGHT!"));
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -173,7 +173,7 @@ function info3() {
 function info4() {
     console(" ");
     console(" ");
-    console("Units get stronger while in the center");
+    console(_("Units get stronger while in the center"));
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -241,11 +241,11 @@ function process_vote(player) {
     votes[from] = true;
 
     if (count_votes() > Math.floor(num_voters / 2)) {
-        console(`More time added.`);
+        console(_("More time added."));
         setMissionTime(getMissionTime() + 2*60); // add 2 minutes
         reset_votes();
     } else {
-        console(`Player ${from} voted for more time.`);
+        console(_(`Player ${from} voted for more time.`));
     }
 }
 

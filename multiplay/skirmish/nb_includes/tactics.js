@@ -386,7 +386,7 @@ _global.dangerLevel = function(loc) {
 _global.checkAttack = function() {
 	if (enumLivingPlayers().filter(isEnemy).length === 0)
 		return;
-	if (gameTime < 4*60*1000) // GLADIATOR: the walls have not exploded yet
+	if (gameTime < 4*60*1000 + me*100) // GLADIATOR: the walls have not exploded yet
 		return;
 	for (let i = 0; i < MAX_GROUPS; ++i)
 		if (!throttled(3000, i)) {

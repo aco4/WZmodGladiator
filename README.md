@@ -1,4 +1,10 @@
-# What does this mod change?
+# Gladiator Mod
+
+**Prepare your army**. In 4 minutes, your base will explode and players will fight to the death!
+
+- Singleplayer ✓
+- Multiplayer ✓
+- 4.5.5 ✓
 
 ---
 
