@@ -700,7 +700,7 @@
 	"WallCorner": {
 		"armour": 7,
 		"breadth": 1,
-		"hitpoints": 65536,
+		"hitpoints": -1,
 		"id": "WallCorner",
 		"lineOfSight": 0,
 		"model": "blwallc4.pie",

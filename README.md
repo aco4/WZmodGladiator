@@ -3,9 +3,13 @@
 **Prepare your army**. In 4 minutes, your base will explode and players will fight to the death!
 
 - Singleplayer ✓
-- Multiplayer ✓
-- 4.5.5 ✓
 - Working AI bot ✓
+- Multiplayer ✓
+- Free-For-All (FFA) ✓
+- 2v2v2v2v2 ✓
+- 3v3 ✓
+- 5v5 ✓
+- 4.5.5 ✓
 
 # How to play
 1. Download the map `10c-Gladiator-test5.wz`. Put in maps folder.
@@ -14,12 +18,11 @@
 
 # Technical Details
 
-### 99999 power
+### Infinite power
 `Gladiator/multiplay/script/rules/setup/base.js`
 
-```diff
--   setPower(2500, player);
-+   setPower(99999, player);
+```js
+setPower(1000000, player);
 ```
 
 
@@ -61,11 +64,36 @@
 },
 ```
 
-### Natural experience gain OFF
-`Gladiator/multiplay/script/mods/init.js`
+### 2x build speed
+`Gladiator/stats/construction.json`
 
-```js
-setExperienceModifier(player, 0);
+```diff
+"CyborgSpade": {
+    ...
+-   "constructPoints": 5,
++   "constructPoints": 10,
+    ...
+},
+"Spade1Mk1": {
+    ...
+-   "constructPoints": 8,
++   "constructPoints": 16,
+    ...
+},
+```
+
+### Increased unit limit
+`Gladiator/multiplay/script/rules/setup/droidlimits.js`
+
+```diff
+function droidLimit(player)
+{
+-   setDroidLimit(player, 150, DROID_ANY);
++   setDroidLimit(player, 300, DROID_ANY);
+    setDroidLimit(player, 10, DROID_COMMAND);
+-   setDroidLimit(player, 15, DROID_CONSTRUCT);
++   setDroidLimit(player, 50, DROID_CONSTRUCT);
+}
 ```
 
 ### Unbreakable walls
@@ -75,9 +103,16 @@ setExperienceModifier(player, 0);
 "WallCorner": {
     ...
 -   "hitpoints": 150,
-+   "hitpoints": 65536,
++   "hitpoints": -1,
     ...
 },
+```
+
+### Natural experience gain OFF
+`Gladiator/multiplay/script/mods/init.js`
+
+```js
+setExperienceModifier(player, 0);
 ```
 
 ### No oil drums
@@ -93,16 +128,3 @@ function oilDrumInit() {
 }
 ```
 
-### 500 units limit
-`Gladiator/multiplay/script/rules/setup/droidlimits.js`
-
-```diff
-function droidLimit(player)	// inside hackNetOff()
-{
--   setDroidLimit(player, 150, DROID_ANY);
-+   setDroidLimit(player, 500, DROID_ANY);
-    setDroidLimit(player, 10, DROID_COMMAND);
-    setDroidLimit(player, 15, DROID_CONSTRUCT);
-}
-
-```

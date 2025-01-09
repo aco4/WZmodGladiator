@@ -2,7 +2,7 @@ function setupBase(player)	// inside hackNetOff()
 {
 	if (baseType === CAMP_CLEAN)
 	{
-		setPower(1300, player);
+		setPower(1000000, player);
 		completeResearchOnTime(cleanTech, player);
 		// Keep only some structures for insane AI
 		var structs = enumStruct(player);
@@ -19,7 +19,7 @@ function setupBase(player)	// inside hackNetOff()
 	}
 	else if (baseType === CAMP_BASE)
 	{
-		setPower(2500, player);
+		setPower(1000000, player);
 		completeResearchOnTime(timeBaseTech, player);
 		// Keep only some structures
 		var structs = enumStruct(player);
@@ -35,7 +35,7 @@ function setupBase(player)	// inside hackNetOff()
 	}
 	else // CAMP_WALLS
 	{
-		setPower(99999, player);
+		setPower(1000000, player);
 		completeResearchOnTime(timeAdvancedBaseTech, player);
 	}
 }
