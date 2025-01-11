@@ -5,6 +5,7 @@ let x2 = 210;
 let y2 = 210;
 
 const num_voters = count_voters(); // number of eligible voters
+const vote_threshold = Math.floor(num_voters / 2); // number of votes needed to add more time
 let votes = Array(num_voters).fill(false); // keep track of who voted
 
 namespace("gladiator_");
@@ -13,18 +14,19 @@ function gladiator_eventGameInit() {
     receiveAllEvents(true);
 }
 
-// Called when the level is started
 function gladiator_eventStartLevel() {
     setMissionTime(4*60); // 4 minutes
 
     setScrollLimits(x1, y1, x2, y2);
 
+    hackNetOff();
     for (let player = 0; player < maxPlayers; player++) {
         if (!isSpectator(player)) {
             addSpotter(125, 125, player, 84*128, false, 0);
             setExperienceModifier(player, 0);
         }
     }
+    hackNetOn();
 
     if (!isSpectator(selectedPlayer)) {
         let [x, y] = find_factory();
@@ -52,9 +54,11 @@ function gladiator_eventMissionTimeout() {
         removeObject(f, true);
     });
 
-    setStructureLimits("A0LightFactory", 0, selectedPlayer);
-    setStructureLimits("A0CyborgFactory", 0, selectedPlayer);
-    setStructureLimits("A0ResearchFacility", 0, selectedPlayer);
+    if (!isSpectator(selectedPlayer)) {
+        setStructureLimits("A0LightFactory", 0, selectedPlayer);
+        setStructureLimits("A0CyborgFactory", 0, selectedPlayer);
+        setStructureLimits("A0ResearchFacility", 0, selectedPlayer);
+    }
 
     setTimer("shrink_map", 5*1000);
 
@@ -130,7 +134,7 @@ function info1() {
 function info2() {
     console(" ");
     console(" ");
-    console(_("Prepare an army for battle!"));
+    console(_("Prepare for battle!"));
     console(" ");
     console(" ");
     playSound("beep9.ogg");
@@ -166,6 +170,25 @@ function find_factory() {
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
+function process_vote(player) {
+    // If the player already voted
+    if (votes[player] == true) {
+        return;
+    }
+
+    votes[player] = true;
+
+    const num_votes = count_votes();
+
+    if (num_votes > vote_threshold) {
+        console(_("More time added."));
+        setMissionTime(getMissionTime() + 2*60); // add 2 minutes
+        reset_votes();
+    } else {
+        console(_(`Player ${player} voted for more time. (${num_votes}/${vote_threshold})`));
+    }
+}
+
 // An eligible voter is human and non-spectator
 function count_voters() {
     let count = 0;
@@ -180,23 +203,6 @@ function count_voters() {
 function reset_votes() {
     for (let i = 0; i < votes.length; i++) {
         votes[i] = false;
-    }
-}
-
-function process_vote(player) {
-    // If the player already voted
-    if (votes[from] == true) {
-        return;
-    }
-
-    votes[from] = true;
-
-    if (count_votes() > Math.floor(num_voters / 2)) {
-        console(_("More time added."));
-        setMissionTime(getMissionTime() + 2*60); // add 2 minutes
-        reset_votes();
-    } else {
-        console(_(`Player ${from} voted for more time.`));
     }
 }
 

@@ -1,15 +1,14 @@
 # Gladiator Mod
 
-**Prepare your army**. In 4 minutes, your base will explode and players will fight to the death!
+**Prepare for battle**. In 4 minutes, your base will explode and players will fight to the death!
 
 - Singleplayer ✓
-- Working AI bot ✓
 - Multiplayer ✓
-- Free-For-All (FFA) ✓
-- 2v2v2v2v2 ✓
-- 3v3 ✓
-- 5v5 ✓
-- 4.5.5 ✓
+- Custom AI bot
+- Free-For-All or Teams (3v3, 5v5, 2v2v2v2v2, etc.)
+- Shrinking map border
+- Increased research and factory speed
+- 4.5.5
 
 # How to play
 1. Download the map `10c-Gladiator-test5.wz`. Put in maps folder.
