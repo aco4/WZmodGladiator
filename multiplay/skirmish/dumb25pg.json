@@ -1,0 +1,12 @@
+{
+	"AI": {
+		"js": "dumb25pg.js",
+		"name": "dumb25pg",
+		"tip": "for Gladiator Mod",
+		"easy_tip": "Gets ~ 25% less power from each oil derrick",
+		"insane_tip": "Gets ~ 100% more power from each oil derrick\nStarts with defensive structures and oil derricks",
+		"wins": 10,
+		"losses": 10,
+		"draws": 0
+	}
+}
