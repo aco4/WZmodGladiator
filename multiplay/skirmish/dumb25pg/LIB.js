@@ -303,11 +303,11 @@ function droidControl_NPartol(droid, dest) {
     const arr = enumRange(droid.x, droid.y, stat.MaxRange / 128, ENEMIES)
 
     if (arr.length > 0) {
-        const posYaw = yawTo(droid, dest, droid.id % 3 - 1, 5)
-        orderDroidLoc(droid, DORDER_PATROL, posYaw.x, posYaw.y)
+        orderDroidObj(droid, DORDER_ATTACK, arr[0])
     }
     else {
-        orderDroidObj(droid, DORDER_ATTACK, arr[0])
+        const posYaw = yawTo(droid, dest, droid.id % 3 - 1, 5)
+        orderDroidLoc(droid, DORDER_PATROL, posYaw.x, posYaw.y)
     }
 }
 

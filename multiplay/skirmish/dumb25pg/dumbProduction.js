@@ -119,8 +119,11 @@ function dumbProduction() {
 * @param {_struct} structure
 */
 function eventDroidBuilt(droid, structure) {
-    _dumbProduction_N += 1
-    if (Stats.Weapon[droid.weapons[0].fullname].Effect == "ANTI TANK") _dumbProduction_AT += 1
+    if (structure.stattype == FACTORY) {
+        _dumbProduction_N += 1
+        if (Stats.Weapon[droid.weapons[0].fullname].Effect == "ANTI TANK") _dumbProduction_AT += 1
+    }
+    
     switch (structure.stattype) {
         case FACTORY:
             return monoFactory(structure)
