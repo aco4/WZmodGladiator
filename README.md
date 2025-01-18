@@ -95,14 +95,13 @@ function droidLimit(player)
 }
 ```
 
-### Unbreakable walls
+### Walls cannot be damaged
 `Gladiator/stats/features.json`
 
 ```diff
 "WallCorner": {
     ...
--   "hitpoints": 150,
-+   "hitpoints": -1,
++   "damageable": 0,
     ...
 },
 ```
