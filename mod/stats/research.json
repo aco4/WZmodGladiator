@@ -3050,9 +3050,7 @@
 		"replacedComponents": [
 			"ZNULLREPAIR:AutoRepair"
 		],
-		"requiredResearch": [
-			"R-Struc-Research-Upgrade08"
-		],
+		"requiredResearch": [],
 		"researchPoints": 14400,
 		"researchPower": 450,
 		"resultComponents": [

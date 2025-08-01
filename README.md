@@ -1,41 +1,64 @@
 # Gladiator Mod
-
-**Prepare for battle**. In 4 minutes, your base will explode and players will fight to the death!
-
-- Singleplayer ✓
-- Multiplayer ✓
-- Custom AI bot
-- Free-For-All or Teams (3v3, 5v5, 2v2v2v2v2, etc.)
+- Warzone 2100 multiplayer battle royale
+- Prepare, then fight
 - Shrinking map border
-- Increased research and factory speed
-- 4.5.5
+- Custom AI bot
+- Faster research and factory speed
+- Free-For-All or Teams (3v3, 5v5, 2v2v2v2v2, etc.)
 
-# How to play
-1. Download the map `10c-Gladiator-test5.wz`. Put in maps folder.
-2. Compress `multiplay` and `stats` into a single `.zip` file. Put in autoload folder.
+## Play
+1. Download the map `📦10c-Gladiator-test6.wz`. Put in `📁maps/`.
+2. Compress/zip/pack `📁multiplay/` and `📁stats/` into `📦GladiatorMod.zip`. Put in `📁mods/4.5.5/autoload/`.
 3. Restart Warzone 2100
 
-# Technical Details
+## Settings
+Edit `📄multiplay/script/rules/gladiatorSettings.json` before compress/zip/pack:
+```
+{
+    "preparationTimeSeconds": 240,      // how many seconds before bases explode
+    "shrinkIntervalMilliseconds": 5000, // time between map shrinks
+    "lassatIntervalMilliseconds": 100,  // how often lassat will fire
+    "votingEnabled": true,              // vote for more time (broken)
+    "experienceModifier": 0,            // units do not gain ranks
+    "mapVisionReveal": true,            // circular satellite uplink
+    "startingPower": 1000000,           // 1 million power
 
-### Infinite power
-`Gladiator/multiplay/script/rules/setup/base.js`
+    "structureLimits": {
+        "A0LightFactory": 1,
+        "A0CyborgFactory": 1,
+        "A0VTolFactory1": 0,
+        "A0ResearchFacility": 5,
+        "A0PowerGenerator": 0
+    },
 
-```js
-setPower(1000000, player);
+    "droidLimitAny": 300,               // unit limit
+    "droidLimitCommand": 10,            // commander limit
+    "droidLimitConstruct": 50,          // truck limit
+
+    "giveResearch": [                   // complete some research for the player
+        ...
+    ]
+}
 ```
 
+## Maps
+- Square map recommended
+- Use `WallCorner` or boulders to trap the player
+- You can use custom Scroll Limits to hide the Command Center and Research Facilities outside of the map
 
-### 3x research speed
+## Stat changes
+
+### Faster research speed
 `Gladiator/stats/structure.json`
 
 ```diff
 -   "researchPoints": 14,
 -   "moduleResearchPoints": 7,
-+   "researchPoints": 42,
-+   "moduleResearchPoints": 21,
++   "researchPoints": 20,
++   "moduleResearchPoints": 10,
 ```
 
-### 6x factory speed
+### 3x factory speed
 `Gladiator/stats/structure.json`
 
 ```diff
@@ -43,13 +66,13 @@ setPower(1000000, player);
     ...
 -   "productionPoints": 10,
 -   "moduleProductionPoints": 10,
-+   "productionPoints": 60,
-+   "moduleProductionPoints": 60,
++   "productionPoints": 30,
++   "moduleProductionPoints": 30,
     ...
 },
 ```
 
-### 6x cyborg factory speed
+### 3x cyborg factory speed
 `Gladiator/stats/structure.json`
 
 ```diff
@@ -57,45 +80,21 @@ setPower(1000000, player);
     ...
 -   "productionPoints": 10,
 -   "moduleProductionPoints": 10,
-+   "productionPoints": 60,
-+   "moduleProductionPoints": 60,
++   "productionPoints": 30,
++   "moduleProductionPoints": 30,
     ...
 },
 ```
 
-### 2x build speed
-`Gladiator/stats/construction.json`
-
+### No auto-repair (unless T4)
+`Gladiator/stats/research.json`
 ```diff
-"CyborgSpade": {
-    ...
--   "constructPoints": 5,
-+   "constructPoints": 10,
-    ...
-},
-"Spade1Mk1": {
-    ...
--   "constructPoints": 8,
-+   "constructPoints": 16,
-    ...
-},
+"requiredResearch": [
+-   "R-Struc-Research-Upgrade08"
+],
 ```
 
-### Increased unit limit
-`Gladiator/multiplay/script/rules/setup/droidlimits.js`
-
-```diff
-function droidLimit(player)
-{
--   setDroidLimit(player, 150, DROID_ANY);
-+   setDroidLimit(player, 300, DROID_ANY);
-    setDroidLimit(player, 10, DROID_COMMAND);
--   setDroidLimit(player, 15, DROID_CONSTRUCT);
-+   setDroidLimit(player, 50, DROID_CONSTRUCT);
-}
-```
-
-### Walls cannot be damaged
+### Indestructible WallCorner feature
 `Gladiator/stats/features.json`
 
 ```diff
@@ -104,13 +103,6 @@ function droidLimit(player)
 +   "damageable": 0,
     ...
 },
-```
-
-### Natural experience gain OFF
-`Gladiator/multiplay/script/mods/init.js`
-
-```js
-setExperienceModifier(player, 0);
 ```
 
 ### No oil drums
