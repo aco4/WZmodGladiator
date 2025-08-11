@@ -1,59 +1,27 @@
 namespace("gladiator_");
 
-function gladiator_eventGameInit() {
-    receiveAllEvents(true);
-}
-
 function gladiator_eventStartLevel() {
     gladiatorSetup();
+    dropshipSetup();
 }
 
-function gladiator_eventMissionTimeout() {
-    setMissionTime(-1); // Remove the mission timer
-
-    for (let player = 0; player < maxPlayers; player++) {
-        if (!isSpectator(player)) {
-            enumStruct(player).forEach((s) => {
-                if (s.stattype == FACTORY || s.stattype == CYBORG_FACTORY || s.stattype == RESEARCH_LAB) {
-                    removeObject(s);
-                }
-            });
-        }
+function gladiator_eventSyncRequest(from, req_id, x, y, obj_id, obj_id2) {
+    const droid = deserialize(req_id);
+    if (droid) {
+        hackNetOff();
+        addDroid(from, Math.floor(x / 128), Math.floor(y / 128), "Droid", droid.body, droid.propulsion, "", "", droid.weapons);
+        hackNetOn();
+    } else {
+        // NOTE It should be impossible to reach this code
+        hackNetOff();
+        addDroid(from, Math.floor(x / 128), Math.floor(y / 128), "Truck Viper Wheels", "Body1REC", "wheeled01", "", "", ["Spade1Mk1"]);
+        hackNetOn();
     }
-
-    enumFeature(ALL_PLAYERS).forEach((f) => {
-        removeObject(f, true);
-    });
-
-    if (!isSpectator(selectedPlayer)) {
-        setStructureLimits("A0LightFactory", 0, selectedPlayer);
-        setStructureLimits("A0CyborgFactory", 0, selectedPlayer);
-        setStructureLimits("A0VTolFactory1", 0, selectedPlayer);
-        setStructureLimits("A0ResearchFacility", 0, selectedPlayer);
-    }
-
-    setTimer("shrinkMap", CONFIG.shrinkIntervalMilliseconds);
-
-    setTimer("fireLassat", CONFIG.lassatIntervalMilliseconds);
-
-    queue("message3", 5*1000); // run this function 5 seconds later
 }
 
-function gladiator_eventChat(from, to, message) {
-    if (!CONFIG.votingEnabled) { // voting must be enabled
+function gladiator_eventResearched(research, structure, player) {
+    if (player !== me) {
         return;
     }
-
-    if (getMissionTime() == -1) { // voting not allowed after walls break
-        return;
-    }
-
-    if (isSpectator(from)) { // ignore spectator chat
-        return;
-    }
-
-    // English, Russian, Portuguese (Brazil)
-    if (message == "more time" || message == "больше времени" || message == "mais tempo") {
-        process_vote(from);
-    }
+    setReticuleFlash(4, true); // Design
 }

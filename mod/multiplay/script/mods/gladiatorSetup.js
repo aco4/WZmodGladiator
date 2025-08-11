@@ -12,9 +12,6 @@ const initialScrollLimitDiameter = Math.min(
 const initialScrollLimitRadius = initialScrollLimitDiameter / 2;
 
 function gladiatorSetup() {
-    // Mission timer
-    setMissionTime(CONFIG.preparationTimeSeconds);
-
     hackNetOff();
     for (let player = 0; player < maxPlayers; player++) {
         if (!isSpectator(player)) {
@@ -37,27 +34,55 @@ function gladiatorSetup() {
     hackNetOn();
 
     // Starting camera position
-    if (!isSpectator(selectedPlayer)) {
-        let [x, y] = findFactory();
+    if (!isSpectator(me)) {
+        let [x, y] = findDroid();
         centreView(x, y);
     }
 
-    // Starting messages
-    queue("message1", 8*1000); // run this function 8 seconds later
-    queue("message2", 13*1000); // run this function 13 seconds later
+    // Remove irrelevant structures and features
+    queue("clean");
+    queue("clean", 500);
+
+    queue("flashResearch", 1 * 1000);
+    queue("flashDesign", 1 * 1000);
+    setTimer("shrinkMap", CONFIG.shrinkIntervalMilliseconds);
+    setTimer("fireLassat", CONFIG.lassatIntervalMilliseconds);
 }
 
 function mapCenter() {
     return [Math.floor(mapWidth / 2), Math.floor(mapHeight / 2)];
 }
 
-// Locate the (x, y) position of the player's factory
-function findFactory() {
-    if (isSpectator(selectedPlayer)) {
+// Return the [x, y] position of any droid belonging to the current player
+function findDroid() {
+    if (isSpectator(me)) {
         return;
     }
-    for (s of enumStruct(selectedPlayer, FACTORY)) {
-        return [s.x, s.y];
+    for (d of enumDroid(me)) {
+        return [d.x, d.y];
     }
     return [0, 0];
+}
+
+function flashResearch() {
+    setReticuleFlash(2, true);
+}
+
+function flashDesign() {
+    setReticuleFlash(4, true);
+}
+
+// Remove irrelevant structures and features
+function clean() {
+    hackNetOff();
+    const REMOVE_STRUCTS = [FACTORY, POWER_GEN, CYBORG_FACTORY, VTOL_FACTORY, RESOURCE_EXTRACTOR, COMMAND_CONTROL];
+    for (let player = 0; player < maxPlayers; player++) {
+        enumStruct(player).forEach(s => {
+            if (REMOVE_STRUCTS.includes(s.stattype)) {
+                removeObject(s);
+            }
+        });
+    }
+    enumFeature(ALL_PLAYERS).forEach(f => removeObject(f));
+    hackNetOn();
 }

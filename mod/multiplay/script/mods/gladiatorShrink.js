@@ -44,13 +44,11 @@ function fireLassat() {
 // Blow up droids outside the scroll limits
 function kill() {
     for (let player = 0; player < maxPlayers; player++) {
-        if (!isSpectator(player)) {
-            enumDroid(player).forEach((d) => {
-                if (out_of_bounds(d)) {
-                    removeObject(d, true);
-                }
-            });
-        }
+        enumDroid(player).forEach((d) => {
+            if (out_of_bounds(d)) {
+                removeObject(d, true);
+            }
+        });
     }
 }
 

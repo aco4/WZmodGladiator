@@ -1,18 +1,26 @@
 {
-    "preparationTimeSeconds": 240,
-    "shrinkIntervalMilliseconds": 5000,
+    "shrinkIntervalMilliseconds": 20000,
     "lassatIntervalMilliseconds": 100,
-    "votingEnabled": true,
     "experienceModifier": 0,
     "mapVisionReveal": true,
     "startingPower": 1000000,
 
+    "dropshipSpawnIntervalSeconds": 40,
+    "dropshipSpawnCount": 1,
+    "dropshipUpdateIntervalSeconds": 2,
+    "dropshipDropShape": [
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1]
+    ],
+
     "structureLimits": {
-        "A0LightFactory": 1,
-        "A0CyborgFactory": 1,
+        "A0LightFactory": 0,
+        "A0CyborgFactory": 0,
         "A0VTolFactory1": 0,
         "A0ResearchFacility": 5,
-        "A0PowerGenerator": 0
+        "A0PowerGenerator": 0,
+        "A0ComDroidControl": 0
     },
 
     "droidLimitAny": 300,
@@ -20,31 +28,11 @@
     "droidLimitConstruct": 50,
 
     "giveResearch": [
-        "R-Sys-Engineering01",
-        "R-Sys-Engineering02",
-        "R-Sys-Engineering03",
-
         "R-Struc-Power-Upgrade01",
         "R-Struc-Power-Upgrade01b",
         "R-Struc-Power-Upgrade01c",
         "R-Struc-Power-Upgrade02",
         "R-Struc-Power-Upgrade03",
-        "R-Struc-Power-Upgrade03a",
-
-
-        "R-Struc-Factory-Upgrade01",
-        "R-Struc-Factory-Upgrade04",
-        "R-Struc-Factory-Upgrade07",
-        "R-Struc-Factory-Upgrade09",
-
-        "R-Struc-Research-Upgrade01",
-        "R-Struc-Research-Upgrade02",
-        "R-Struc-Research-Upgrade03",
-        "R-Struc-Research-Upgrade04",
-        "R-Struc-Research-Upgrade05",
-        "R-Struc-Research-Upgrade06",
-        "R-Struc-Research-Upgrade07",
-        "R-Struc-Research-Upgrade08",
-        "R-Struc-Research-Upgrade09"
+        "R-Struc-Power-Upgrade03a"
     ]
 }
