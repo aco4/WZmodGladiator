@@ -2,9 +2,9 @@ namespace("conditions_");
 
 function conditions_eventGameInit() {
     if (alliancesType == NO_ALLIANCES || alliancesType == ALLIANCES) {
-        queue("check_gameover_ffa", 4*60*1000);
+        queue("check_gameover_ffa", 30*1000);
     } else {
-        queue("check_gameover_teams", 4*60*1000);
+        queue("check_gameover_teams", 30*1000);
     }
 }
 
@@ -22,6 +22,10 @@ function check_gameover_ffa() {
         queue("check_gameover_ffa", 3*1000); // Check again 3 seconds later
         return;
     }
+
+    // TODO because of desync issues that I can't fix, everyone is a winner
+    gameOverMessage(true);
+    return;
 
     // Only 1 player left. They are the winner.
     if (contenders[0] == selectedPlayer) {

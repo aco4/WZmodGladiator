@@ -40,12 +40,15 @@ function gladiatorSetup() {
     }
 
     // Remove irrelevant structures and features
+    // Execute twice to fully remove oil derricks
     queue("clean");
     queue("clean", 500);
 
-    queue("flashResearch", 1 * 1000);
-    queue("flashDesign", 1 * 1000);
-    setTimer("shrinkMap", CONFIG.shrinkIntervalMilliseconds);
+    queue("initReticules", 1 * 1000);
+
+    if (CONFIG.mapShrinkEnabled) {
+        setTimer("shrinkMap", CONFIG.shrinkIntervalMilliseconds);
+    }
     setTimer("fireLassat", CONFIG.lassatIntervalMilliseconds);
 }
 
@@ -64,18 +67,15 @@ function findDroid() {
     return [0, 0];
 }
 
-function flashResearch() {
-    setReticuleFlash(2, true);
-}
-
-function flashDesign() {
-    setReticuleFlash(4, true);
+function initReticules() {
+    setReticuleButton(1, _("Transport (F1)"), "image_manufacture_up.png", "image_manufacture_down.png");
+    setReticuleFlash(2, true); // Research
 }
 
 // Remove irrelevant structures and features
 function clean() {
     hackNetOff();
-    const REMOVE_STRUCTS = [FACTORY, POWER_GEN, CYBORG_FACTORY, VTOL_FACTORY, RESOURCE_EXTRACTOR, COMMAND_CONTROL];
+    const REMOVE_STRUCTS = [POWER_GEN, VTOL_FACTORY, RESOURCE_EXTRACTOR, COMMAND_CONTROL];
     for (let player = 0; player < maxPlayers; player++) {
         enumStruct(player).forEach(s => {
             if (REMOVE_STRUCTS.includes(s.stattype)) {

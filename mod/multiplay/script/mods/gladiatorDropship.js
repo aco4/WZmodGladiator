@@ -113,7 +113,7 @@ function dropshipSetup() {
 function spawnDropships() {
     for (let player = 0; player < maxPlayers; player++) {
         for (let i = 0; i < SPAWN_COUNT; i++) {
-            if (hasDroid(player)) {
+            if (hasNonTransporterDroid(player)) {
                 spawnDropship(player);
             }
         }
@@ -132,22 +132,10 @@ function spawnDropship(player) {
     if (!targetDroid) {
         return;
     }
-    const dropLocation = { x: targetDroid.x, y: targetDroid.y };
-
-    function pickLocationOnBorder() {
-        const { x: x1, y: y1, x2, y2 } = getScrollLimits();
-        const MARGIN = 1;
-        switch (syncRandom(4)) {
-            case 0: return { x: fuzz(dropLocation.x, x1+1, x2-1), y: y1+MARGIN };
-            case 1: return { x: fuzz(dropLocation.x, x1+1, x2-1), y: y2-MARGIN };
-            case 2:  return { x: x1+MARGIN, y: fuzz(dropLocation.y, y1+1, y2-1) };
-            case 3:  return { x: x2-MARGIN, y: fuzz(dropLocation.y, y1+1, y2-1) };
-        }
-    }
-
+    const dropLocation = pickStructLocation(targetDroid, "A0HardcreteMk1Wall", targetDroid.x, targetDroid.y) || { x: targetDroid.x, y: targetDroid.y };
     const spawnLocation = onBorder(dropLocation.x, dropLocation.y);
     const departLocation = onBorder(dropLocation.x, dropLocation.y);
-
+    const cargo = pickCargo(player);
     const objectives = [
         {
             getLocation: (dropship) => dropLocation,
@@ -157,29 +145,27 @@ function spawnDropship(player) {
                     playSound("pcv442.ogg"); // "Reinforcements landing"
                 }
 
-                // WARNING templates are not synced across clients!
-                const templates = enumTemplates(dropship.player)
-                                 .filter(t => t.droidType === DROID_WEAPON)
-                                 .map(t => makeTemplate(dropship.player, t.fullname, t.body, t.propulsion, "", t.weapons))
-                                 .filter(t => t != null)
-                                 .slice(-2); // Only consider the 2 most recent templates
+                const updatedCargo = pickCargo(dropship.player, cargo);
 
+                hackNetOff();
                 let i = 0;
                 for (let row = 0; row < DROP_SHAPE.length; row++) {
                     for (let col = 0; col < DROP_SHAPE[row].length; col++) {
                         for (let count = 0; count < DROP_SHAPE[row][col]; count++) {
                             const x = dropLocation.x - 1 + col;
                             const y = dropLocation.y - 1 + row;
-                            if (dropship.player === me) {
-                                // Use Math.random() instead of syncRandom for picking template
-                                const droid = pick(templates, false);
-                                // Serialize the picked template, and send it to everyone
-                                const serializedDroid = serialize(droid);
-                                syncRequest(serializedDroid, x, y, targetDroid);
+                            const droid = updatedCargo?.[i++];
+                            if (droid) {
+                                const turrets = getTurrets(droid);
+                                addDroid(dropship.player, x, y, droid.name, droid.body, droid.propulsion, "", "", turrets);
+                            } else {
+                                addDroid(dropship.player, x, y, "Truck Viper Wheels", "Body1REC", "wheeled01", "", "", ["Spade1Mk1"]);
                             }
+
                         }
                     }
                 }
+                hackNetOn();
 
                 if (hasConstructionDroid(dropship.player) && dropship.player === me) {
                     setReticuleButton(3, _("Build (F3)"), "image_build_up.png", "image_build_down.png");
@@ -199,8 +185,36 @@ function spawnDropship(player) {
     dropships.add(dropship);
 }
 
+// Returns an array of droids to be dropped (the dropship's "cargo")
+// Returns the fallback in case of failure
+function pickCargo(player, fallback = null) {
+    const factories = getAllFactories(player);
+    const droids = factories
+                  .map(f => getDroidProduction(f))
+                  .filter(d => d != null && getTurrets(d));
+    if (droids.length > 0) {
+        return Array.from({ length: DROP_COUNT }, () => pick(droids));
+    } else if (hasCombatDroid(player)) {
+        return pickCombatDroids(player, DROP_COUNT);
+    } else {
+        return fallback;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
+
+// Identify a droid's turret, if possible
+// Returns an array on success, null otherwise
+function getTurrets(droid) {
+    // Return null for turrets we cannot reliably identify (e.g. Wide Spectrum Sensor)
+    switch (droid.droidType) {
+        case DROID_WEAPON:    return droid.weapons.map(w => w.id);
+        case DROID_CYBORG:    return droid.weapons.map(w => w.id);
+        case DROID_CONSTRUCT: return droid.propulsion === "CyborgLegs" ? ["CyborgSpade"] : ["Spade1Mk1"];
+        case DROID_REPAIR:    return droid.propulsion === "CyborgLegs" ? ["CyborgRepair"] : null;
+        default:              return null;
+    }
+}
 
 // Snap (x, y) to the nearest border
 function onBorder(x, y) {
@@ -225,6 +239,18 @@ function onBorder(x, y) {
   }
 
   return { x, y };
+}
+
+// Returns a location on the border that is near (x, y)
+function pickLocationOnBorder(x, y) {
+    const { x: x1, y: y1, x2, y2 } = getScrollLimits();
+    const MARGIN = 1;
+    switch (syncRandom(4)) {
+        case 0: return { x: fuzz(x, x1+1, x2-1), y: y1+MARGIN };
+        case 1: return { x: fuzz(x, x1+1, x2-1), y: y2-MARGIN };
+        case 2: return { x: x1+MARGIN, y: fuzz(y, y1+1, y2-1) };
+        case 3: return { x: x2-MARGIN, y: fuzz(y, y1+1, y2-1) };
+    }
 }
 
 // fuzz(8, 0, 8) returns a number in the interval [4, 8]
@@ -301,50 +327,17 @@ function pick(arr, synced = true) {
     }
 }
 
-function isCyborg(droid) {
-    return droid.propulsion.toUpperCase().includes("CYBORG");
-}
-
 function pickCombatDroids(player, count) {
     const combatDroids = getCombatDroids(player);
     return Array.from({ length: count }, () => pick(combatDroids));
-}
-
-function pickNonCyborgTemplates(player, count) {
-    const nonCyborgTemplates = getNonCyborgTemplates(player);
-    return Array.from({ length: count }, () => pick(nonCyborgTemplates));
-}
-
-function pickCombatDroid(player) {
-    return pick(getCombatDroids(player));
-}
-
-function pickDroid(player) {
-    return pick(enumDroid(player));
-}
-
-function pickNonCyborgTemplate(player) {
-    return pick(getNonCyborgTemplates(player));
 }
 
 function getCombatDroids(player) {
     return [...enumDroid(player, DROID_WEAPON), ...enumDroid(player, DROID_CYBORG)];
 }
 
-function getNonCyborgTemplates(player) {
-    return enumTemplates(player).filter(t => !isCyborg(t));
-}
-
-function hasNonCyborgTemplate(player) {
-    return enumTemplates(player).some(t => !isCyborg(t));
-}
-
-function hasTemplate(player) {
-    return enumTemplates(player).length > 0;
-}
-
-function hasDroid(player) {
-    return enumDroid(player).length > 0;
+function getAllFactories(player) {
+    return [...enumStruct(player, FACTORY), ...enumStruct(player, CYBORG_FACTORY)];
 }
 
 function hasCombatDroid(player) {
@@ -353,4 +346,9 @@ function hasCombatDroid(player) {
 
 function hasConstructionDroid(player) {
     return enumDroid(player, DROID_CONSTRUCT).length > 0;
+}
+
+function hasNonTransporterDroid(player) {
+    const TRANSPORTERS = [DROID_TRANSPORTER, DROID_SUPERTRANSPORTER];
+    return enumDroid(player).filter(d => !TRANSPORTERS.includes(d.droidType)).length > 0
 }

@@ -1,4 +1,5 @@
 {
+    "mapShrinkEnabled": true,
     "shrinkIntervalMilliseconds": 20000,
     "lassatIntervalMilliseconds": 100,
     "experienceModifier": 0,
@@ -15,17 +16,17 @@
     ],
 
     "structureLimits": {
-        "A0LightFactory": 0,
-        "A0CyborgFactory": 0,
+        "A0LightFactory": 1,
+        "A0CyborgFactory": 1,
         "A0VTolFactory1": 0,
         "A0ResearchFacility": 5,
         "A0PowerGenerator": 0,
         "A0ComDroidControl": 0
     },
 
-    "droidLimitAny": 300,
-    "droidLimitCommand": 10,
-    "droidLimitConstruct": 50,
+    "droidLimitAny": 0,
+    "droidLimitCommand": 0,
+    "droidLimitConstruct": 0,
 
     "giveResearch": [
         "R-Struc-Power-Upgrade01",
@@ -33,6 +34,11 @@
         "R-Struc-Power-Upgrade01c",
         "R-Struc-Power-Upgrade02",
         "R-Struc-Power-Upgrade03",
-        "R-Struc-Power-Upgrade03a"
+        "R-Struc-Power-Upgrade03a",
+
+        "R-Struc-Factory-Upgrade01",
+        "R-Struc-Factory-Upgrade04",
+        "R-Struc-Factory-Upgrade07",
+        "R-Struc-Factory-Upgrade09"
     ]
 }
