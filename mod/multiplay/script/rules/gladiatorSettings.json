@@ -5,6 +5,7 @@
     "experienceModifier": 0,
     "mapVisionReveal": true,
     "startingPower": 1000000,
+    "vtolEnabled": true,
 
     "dropshipSpawnIntervalSeconds": 40,
     "dropshipSpawnCount": 1,
@@ -23,6 +24,19 @@
         "A0PowerGenerator": 0,
         "A0ComDroidControl": 0
     },
+
+    "vtolFactorySpawnPositions": [
+        { "x": 22, "y": 245 },
+        { "x": 43, "y": 245 },
+        { "x": 64, "y": 245 },
+        { "x": 85, "y": 245 },
+        { "x": 106, "y": 245 },
+        { "x": 127, "y": 245 },
+        { "x": 148, "y": 245 },
+        { "x": 169, "y": 245 },
+        { "x": 190, "y": 245 },
+        { "x": 211, "y": 245 }
+    ],
 
     "droidLimitAny": 0,
     "droidLimitCommand": 0,

@@ -1,62 +1,102 @@
 namespace("conditions_");
 
 function conditions_eventGameInit() {
-    if (alliancesType == NO_ALLIANCES || alliancesType == ALLIANCES) {
-        queue("check_gameover_ffa", 30*1000);
+    queue("checkGameOver", 3*1000);
+}
+
+function checkGameOver() {
+    // Call different functions depending on alliancesType
+    const getAliveOrDead = isFFA() ? getAliveOrDeadPlayers : getAliveOrDeadTeams;
+    const finalize       = isFFA() ? finalizePlayer        : finalizeTeam;
+
+    // Check game over
+    const { alive, dead } = getAliveOrDead();
+    if (isGameOver(alive, dead)) {
+        alive.forEach(x => finalize(x, true));
+        dead.forEach(x => finalize(x, false));
+        if (isSpectator(-1)) {
+            gameOverMessage(false);
+        }
     } else {
-        queue("check_gameover_teams", 30*1000);
+        queue("checkGameOver", 3*1000); // Check 3 seconds later
     }
 }
 
-function check_gameover_ffa() {
-    // Get players that have units
-    let contenders = [];
+function getAliveOrDeadPlayers() {
+    const alive = [];
+    const dead = [];
     for (let player = 0; player < maxPlayers; player++) {
-        if (countDroid(DROID_ANY, player) > 0) {
-            contenders.push(player);
+        if (isAlive(player)) {
+            alive.push(player);
+        } else {
+            dead.push(player);
+        }
+    }
+    return { alive, dead };
+}
+
+function getAliveOrDeadTeams() {
+    const alive = [];
+    for (const [player, data] of playerData.entries()) {
+        if (!alive.includes(data.team) && isAlive(player)) {
+            alive.push(data.team);
         }
     }
 
-    // Do not end the game if multiple players remain
-    if (contenders.length >= 2) {
-        queue("check_gameover_ffa", 3*1000); // Check again 3 seconds later
-        return;
+    const dead = [];
+    for (const [player, data] of playerData.entries()) {
+        if (!alive.includes(data.team) && !dead.includes(data.team)) {
+            dead.push(data.team);
+        }
     }
 
-    // TODO because of desync issues that I can't fix, everyone is a winner
-    gameOverMessage(true);
-    return;
+    return { alive, dead };
+}
 
-    // Only 1 player left. They are the winner.
-    if (contenders[0] == selectedPlayer) {
-        gameOverMessage(true); // win
-    } else {
-        gameOverMessage(false); // lose
+/**
+ * @param {number} player
+ * @param {boolean} win
+ */
+function finalizePlayer(player, win) {
+    if (player === selectedPlayer) {
+        gameOverMessage(win);
+    }
+    if (!win && !isSpectator(player) && playerData[player].isHuman) {
+        // should come after gameOverMessage() to ensure the proper gameOverMessage is displayed
+        transformPlayerToSpectator(player);
     }
 }
 
-function check_gameover_teams() {
-    // Get teams that have units
-    let teams = [];
-    for (data of playerData) {
-        if (!teams.includes(data.team) && countDroid(DROID_ANY, data.position) > 0) {
-            teams.push(data.team);
+/**
+ * @param {number} team
+ * @param {boolean} win
+ */
+function finalizeTeam(team, win) {
+    for (const [player, data] of playerData.entries()) {
+        if (data.team == team) {
+            finalizePlayer(player, win);
         }
     }
+}
 
-    // Do not end the game if multiple teams remain
-    if (teams.length >= 2) {
-        queue("check_gameover_teams", 3*1000); // Check again 3 seconds later
-        return;
-    }
+function isFFA() {
+    return alliancesType == NO_ALLIANCES || alliancesType == ALLIANCES;
+}
 
-    // Only 1 team left. They are the winner.
-    for (data of playerData) {
-        if (data.position == selectedPlayer && data.team == teams[0]) {
-            gameOverMessage(true); // win
-            return;
-        }
-    }
+function isGameExpired() {
+    return gameTimeLimit > 0 && gameTime > gameTimeLimit;
+}
 
-    gameOverMessage(false); // lose
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+// Write custom end condition logic below                                     //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+function isAlive(player) {
+    return countDroid(DROID_ANY, player) > 0;
+}
+
+function isGameOver(alive, dead) {
+    return alive.length <= 1 || isGameExpired();
 }

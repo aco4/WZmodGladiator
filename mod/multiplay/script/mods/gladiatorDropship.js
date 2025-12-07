@@ -1,19 +1,13 @@
 namespace("Dropship_");
 
+// Setup configuration variables
 const SPAWN_INTERVAL_SECONDS = CONFIG.dropshipSpawnIntervalSeconds;
 const SPAWN_COUNT = CONFIG.dropshipSpawnCount;
 const DROPSHIP_UPDATE_INTERVAL_SECONDS = CONFIG.dropshipUpdateIntervalSeconds;
-
-const BORDER = Object.freeze({
-    NORTH: 0,
-    SOUTH: 1,
-    EAST: 2,
-    WEST: 3,
-});
-
 const DROP_SHAPE = CONFIG.dropshipDropShape;
-
 const DROP_COUNT = DROP_SHAPE.flat().reduce((a, b) => a + b, 0);
+
+////////////////////////////////////////////////////////////////////////////////
 
 class Dropship {
     objectives; // Array of Objective objects
@@ -22,13 +16,14 @@ class Dropship {
     onDeath;
     onMissionComplete;
 
-    constructor(player, x, y, objectives, onDeath, onMissionComplete) {
+    constructor(player, x, y, objectives, onDeath, onMissionComplete, isCyborgTransport = false) {
         this.objectives = objectives;
         this.onDeath = onDeath;
         this.onMissionComplete = onMissionComplete;
 
         hackNetOff();
-        const droid = addDroid(player, x, y, "Dropship", "SuperTransportBody", "V-Tol", "", "", ["MG1-VTOL"]);
+        const body = isCyborgTransport ? "TransporterBody" : "SuperTransportBody";
+        const droid = addDroid(player, x, y, "Dropship", body, "V-Tol", "", "", ["MG1-VTOL"]);
         hackNetOn();
 
         this.droidID = droid?.id;
@@ -37,10 +32,9 @@ class Dropship {
     // Main update routine
     update() {
         if (this.dead) {
-            this.onDeath(this);
+            this.onDeath(this); // TODO this gets called each time the Dropship is updated!
             return;
         }
-
         if (this.currentObjective.isComplete(this)) {
             this.completeObjective();
         } else {
@@ -110,10 +104,13 @@ function dropshipSetup() {
     setTimer("updateDropships", DROPSHIP_UPDATE_INTERVAL_SECONDS * 1000);
 }
 
+// TODO make VTOL fly into the map instead
+// TODO also make cyborg transport fly in too.
+// TODO need to split the 9 units between all 3 types
 function spawnDropships() {
     for (let player = 0; player < maxPlayers; player++) {
         for (let i = 0; i < SPAWN_COUNT; i++) {
-            if (hasNonTransporterDroid(player)) {
+            if (hasNonTransporterDroid(player) && !hasDropship(player)) {
                 spawnDropship(player);
             }
         }
@@ -128,17 +125,24 @@ function updateDropships() {
 }
 
 function spawnDropship(player) {
-    const targetDroid = pick(enumDroid(player).filter(d => !d.isVTOL && d.droidType !== DROID_SUPERTRANSPORTER));
+    const targetDroid = pickTargetDroid(player);
     if (!targetDroid) {
         return;
     }
-    const dropLocation = pickStructLocation(targetDroid, "A0HardcreteMk1Wall", targetDroid.x, targetDroid.y) || { x: targetDroid.x, y: targetDroid.y };
-    const spawnLocation = onBorder(dropLocation.x, dropLocation.y);
-    const departLocation = onBorder(dropLocation.x, dropLocation.y);
+    const dropLocation = pickDropLocation(player, targetDroid);
+    const spawnLocation = onBorder(dropLocation.x, dropLocation.y, margin = -10);
+    const departLocation = spawnLocation;
     const cargo = pickCargo(player);
     const objectives = [
         {
-            getLocation: (dropship) => dropLocation,
+            getLocation: (dropship) => {
+                const updatedLocation = pickDropLocation(player, targetDroid);
+                if (updatedLocation) {
+                    dropLocation.x = updatedLocation.x;
+                    dropLocation.y = updatedLocation.y;
+                }
+                return dropLocation;
+            },
             isComplete: (dropship) => isDroidAt(dropship.droid, dropLocation.x, dropLocation.y),
             onComplete: (dropship) => {
                 if (dropship.player === me) {
@@ -173,16 +177,20 @@ function spawnDropship(player) {
             },
         },
         {
-            getLocation: (dropship) => departLocation,
+            getLocation: (dropship) => onBorder(dropship.droid.x, dropship.droid.y, margin = -10),
             isComplete: (dropship) => isDroidNearBorder(dropship.droid),
             onComplete: (dropship) => dropship.despawn(),
         },
     ];
 
-    const onDeath = (dropship) => dropships.delete(dropship);
-
-    const dropship = new Dropship(player, spawnLocation.x, spawnLocation.y, objectives, onDeath, () => {});
-    dropships.add(dropship);
+    dropships.add(new Dropship(
+        /* player            = */ player,
+        /* spawnLocation     = */ spawnLocation.x, spawnLocation.y,
+        /* objectives        = */ objectives,
+        /* onDeath           = */ (dropship) => dropships.delete(dropship),
+        /* onMissionComplete = */ () => {},
+        /* isCyborgTransport = */ false,
+    ));
 }
 
 // Returns an array of droids to be dropped (the dropship's "cargo")
@@ -201,6 +209,28 @@ function pickCargo(player, fallback = null) {
     }
 }
 
+// Return { x, y } of a droid, or null on failure (it died)
+function pickDropLocation(player, targetDroid) {
+    targetDroid = getDroidByID(targetDroid.id);
+    if (!targetDroid) {
+        return null;
+    }
+    // Find empty 3x3 area
+    const safeLocation = pickStructLocation(
+        targetDroid,
+        "A0HardcreteMk1Wall",
+        targetDroid.x, targetDroid.y
+    );
+    return safeLocation || { x: targetDroid.x, y: targetDroid.y };
+}
+
+// The dropship will pick a random droid and use its {x, y} as the dropLocation
+function pickTargetDroid(player) {
+    return pick(enumDroid(player).filter(droid =>
+        !droid.isVTOL && droid.droidType !== DROID_SUPERTRANSPORTER && droid.droidType !== DROID_TRANSPORTER
+    ));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // Identify a droid's turret, if possible
@@ -217,28 +247,55 @@ function getTurrets(droid) {
 }
 
 // Snap (x, y) to the nearest border
-function onBorder(x, y) {
-  const { x: x1, y: y1, x2, y2 } = getScrollLimits();
+// Optional margin specifying an offset (e.g. 2 tiles inwards, -3 tiles outward)
+function onBorder(x, y, margin = 0) {
+    const { x: x1, y: y1, x2, y2 } = getScrollLimits();
 
-  // Distances to each border
-  const distLeft   = Math.abs(x - x1);
-  const distRight  = Math.abs(x2 - x);
-  const distTop    = Math.abs(y - y1);
-  const distBottom = Math.abs(y2 - y);
+    // Distances to each border
+    const distLeft   = Math.abs(x - x1);
+    const distRight  = Math.abs(x2 - x);
+    const distTop    = Math.abs(y - y1);
+    const distBottom = Math.abs(y2 - y);
 
-  const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+    const minDist = Math.min(distLeft, distRight, distTop, distBottom);
 
-  if (minDist === distLeft) {
-      x = x1;
-  } else if (minDist === distRight) {
-      x = x2;
-  } else if (minDist === distTop) {
-      y = y1;
-  } else {
-      y = y2;
-  }
+    if (minDist === distLeft) {
+        x = x1 + margin;
+    } else if (minDist === distRight) {
+        x = x2 - margin;
+    } else if (minDist === distTop) {
+        y = y1 + margin;
+    } else { // bottom
+        y = y2 - margin;
+    }
 
-  return { x, y };
+    return {
+        x: Math.max(0, Math.min(mapWidth, x)),
+        y: Math.max(0, Math.min(mapHeight, y)),
+    };
+}
+
+// Returns the closest border to x, y
+function closestBorder(x, y) {
+    const { x: x1, y: y1, x2, y2 } = getScrollLimits();
+
+    // Distances to each border
+    const distLeft   = Math.abs(x - x1);
+    const distRight  = Math.abs(x2 - x);
+    const distTop    = Math.abs(y - y1);
+    const distBottom = Math.abs(y2 - y);
+
+    const minDist = Math.min(distLeft, distRight, distTop, distBottom);
+
+    if (minDist === distLeft) {
+        return "WEST";
+    } else if (minDist === distRight) {
+        return "EAST";
+    } else if (minDist === distTop) {
+        return "NORTH"
+    } else {
+        return "SOUTH";
+    }
 }
 
 // Returns a location on the border that is near (x, y)
@@ -337,7 +394,7 @@ function getCombatDroids(player) {
 }
 
 function getAllFactories(player) {
-    return [...enumStruct(player, FACTORY), ...enumStruct(player, CYBORG_FACTORY)];
+    return [...enumStruct(player, FACTORY), ...enumStruct(player, CYBORG_FACTORY), ...enumStruct(player, VTOL_FACTORY)];
 }
 
 function hasCombatDroid(player) {
@@ -351,4 +408,13 @@ function hasConstructionDroid(player) {
 function hasNonTransporterDroid(player) {
     const TRANSPORTERS = [DROID_TRANSPORTER, DROID_SUPERTRANSPORTER];
     return enumDroid(player).filter(d => !TRANSPORTERS.includes(d.droidType)).length > 0
+}
+
+function hasDropship(player) {
+    for (const dropship of dropships) {
+        if (dropship.player === player) {
+           return true;
+        }
+    }
+    return false;
 }
