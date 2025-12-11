@@ -23,7 +23,7 @@ class Dropship {
 
         hackNetOff();
         const body = isCyborgTransport ? "TransporterBody" : "SuperTransportBody";
-        const droid = addDroid(player, x, y, "Dropship", body, "V-Tol", "", "", ["MG1-VTOL"]);
+        const droid = addDroid(player, x, y, "Dropship", body, "V-Tol", "", "", ["Null-VTOL-Transport-Turret"]);
         hackNetOn();
 
         this.droidID = droid?.id;
